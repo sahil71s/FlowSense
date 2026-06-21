@@ -178,46 +178,61 @@ if st.button("Generate Deployment Plan"):
     score = 0
 
     if priority == "High":
-        score += 3
+        score += 4
+    else:
+        score += 2
 
     if road_closure:
-        score += 2
-
-    if crowd_size == "High":
         score += 3
 
+    if crowd_size == "High":
+        score += 4
     elif crowd_size == "Medium":
         score += 2
+    else:
+        score += 1
 
     if weather == "Rain":
-        score += 1
+        score += 2
+    elif weather == "Fog":
+        score += 3
 
     score += simultaneous_events
 
     # =====================================
-    # Resource Recommendation
+    # Risk Level
     # =====================================
 
-    if score >= 8:
-
+    if score >= 12:
         risk = "Critical"
-        officers = 12
-        barricades = 5
-        diversions = 3
 
-    elif score >= 5:
-
+    elif score >= 8:
         risk = "High"
-        officers = 8
-        barricades = 3
-        diversions = 2
 
     else:
-
         risk = "Medium"
-        officers = 4
-        barricades = 2
-        diversions = 1
+
+    # =====================================
+    # Dynamic Resource Recommendation
+    # =====================================
+
+    officers = max(
+        4,
+        int(duration_prediction / 60)
+        + (3 if priority == "High" else 1)
+        + (2 if crowd_size == "High" else 1)
+        + simultaneous_events
+    )
+
+    barricades = max(
+        2,
+        int(officers / 3)
+    )
+
+    diversions = max(
+        1,
+        int(barricades / 2)
+    )
 
     st.divider()
 
@@ -225,10 +240,25 @@ if st.button("Generate Deployment Plan"):
 
     a, b, c, d = st.columns(4)
 
-    a.metric("Duration", f"{duration_prediction} min")
-    b.metric("Risk Level", risk)
-    c.metric("Officers", officers)
-    d.metric("Barricades", barricades)
+    a.metric(
+        "Duration",
+        f"{duration_prediction} min"
+    )
+
+    b.metric(
+        "Risk Level",
+        risk
+    )
+
+    c.metric(
+        "Officers",
+        officers
+    )
+
+    d.metric(
+        "Barricades",
+        barricades
+    )
 
     st.metric(
         "Diversion Routes",
@@ -239,7 +269,8 @@ if st.button("Generate Deployment Plan"):
 
     st.subheader("Command Summary")
 
-    st.success(f"""
+    st.success(
+f"""
 Expected Duration : {duration_prediction} min
 
 Risk Level : {risk}
@@ -251,4 +282,5 @@ Install {barricades} barricades.
 Activate {diversions} diversion routes.
 
 Monitor the corridor continuously until clearance.
-""")
+"""
+)
