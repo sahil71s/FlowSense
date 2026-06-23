@@ -170,7 +170,7 @@ st.write("")
 st.write("")
 st.write("")
 
-left, center, right = st.columns([5,2.4,4.1])
+left, center, right = st.columns([2.5,2.4,4.1])
 
 with center:
     launch = st.button(
